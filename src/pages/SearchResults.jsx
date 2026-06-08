@@ -144,15 +144,6 @@ export default function SearchResults() {
                 <div style={{ fontSize: '0.72rem', color: '#666', marginTop: '2px' }}>
                   {foto.categoria.charAt(0).toUpperCase() + foto.categoria.slice(1)}
                 </div>
-                <div style={{
-                  marginTop: '5px', display: 'inline-block',
-                  padding: '2px 7px', borderRadius: '20px',
-                  fontSize: '0.7rem', fontWeight: '600',
-                  background: '#dcfce7', color: '#166534',
-                  border: '1px solid #86efac'
-                }}>
-                  ✓ {foto.persona} {foto.score}%
-                </div>
               </div>
             </div>
           ))}
