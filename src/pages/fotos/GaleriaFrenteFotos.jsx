@@ -6,8 +6,9 @@ import { datosFase2 } from '../fases/Fase2';
 import { getFotosPorFrente, uploadFoto, deleteFoto, crearGrupoVacio, eliminarGrupoCompleto } from '../../api/fotos';
 import * as faceapi from 'face-api.js';
 
-// ─── Carga de modelos (una sola vez global) ───────────────────────────────────
+// ─── Modelos face-api.js (carga global una sola vez) ─────────────────────────
 const MODELS_URL = '/models';
+const API_URL = 'http://localhost:3001';
 let modelosCargados = false;
 
 async function cargarModelos() {
@@ -20,14 +21,26 @@ async function cargarModelos() {
   modelosCargados = true;
 }
 
-const API_URL = 'http://localhost:3001';
+// ─── Guardar etiquetas en SQLite via backend ──────────────────────────────────
+async function guardarEtiquetas(fotoId, etiquetas) {
+  try {
+    await fetch(`${API_URL}/api/fotos/etiquetas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fotoId, etiquetas })
+    });
+  } catch (err) {
+    console.error('[guardarEtiquetas] Error:', err);
+  }
+}
 
-// ─── Subcomponente: foto con reconocimiento facial integrado ──────────────────
+// ─── Subcomponente: celda con foto + reconocimiento facial ────────────────────
 function CeldaConFoto({ foto, onEliminar, modelosListos }) {
   const imgRef = useRef(null);
   const canvasRef = useRef(null);
   const [etiquetas, setEtiquetas] = useState([]);
   const [analizando, setAnalizando] = useState(false);
+  const yaAnalizado = useRef(false);
 
   const analizarImagen = useCallback(async () => {
     if (!modelosListos || !imgRef.current) return;
@@ -51,19 +64,19 @@ function CeldaConFoto({ foto, onEliminar, modelosListos }) {
         return;
       }
 
-      // Convertir Float32Array → Array normal para enviar al backend
+      // Convertir Float32Array → Array normal
       const vectores = detecciones.map(d => Array.from(d.descriptor));
 
+      // Enviar al backend de reconocimiento
       const res = await fetch(`${API_URL}/api/reconocer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ vectores })
       });
-
       const data = await res.json();
       const resultados = data.identificados || [];
 
-      // Dibujar cajas y nombres sobre el canvas
+      // Dibujar cajas y nombres en el canvas
       const dims = faceapi.matchDimensions(canvas, img, true);
       const resized = faceapi.resizeResults(detecciones, dims);
 
@@ -86,17 +99,36 @@ function CeldaConFoto({ foto, onEliminar, modelosListos }) {
       });
 
       setEtiquetas(resultados);
+
+      // Guardar en SQLite (solo personas reconocidas, una vez por foto)
+      const reconocidas = resultados.filter(r => r.reconocido);
+      if (reconocidas.length > 0) {
+        await guardarEtiquetas(foto.id, reconocidas);
+      }
+
     } catch (err) {
       console.error('[Reconocimiento] Error:', err);
     } finally {
       setAnalizando(false);
     }
-  }, [modelosListos]);
+  }, [modelosListos, foto.id]);
+
+  // Analizar automáticamente al cargar la imagen (solo la primera vez)
+  const handleImageLoad = useCallback(() => {
+    if (modelosListos && !yaAnalizado.current) {
+      yaAnalizado.current = true;
+      analizarImagen();
+    }
+  }, [modelosListos, analizarImagen]);
 
   return (
     <div style={{ width: '100%' }}>
-      {/* Imagen + canvas superpuesto */}
-      <div style={{ position: 'relative', width: '100%', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+      {/* Contenedor imagen + canvas superpuesto */}
+      <div style={{
+        position: 'relative', width: '100%',
+        borderRadius: '12px', overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+      }}>
         <img
           ref={imgRef}
           src={`${API_URL}${foto.url}`}
@@ -104,7 +136,7 @@ function CeldaConFoto({ foto, onEliminar, modelosListos }) {
           crossOrigin="anonymous"
           style={{ width: '100%', height: 'auto', maxHeight: '350px', objectFit: 'cover', display: 'block' }}
           onClick={() => window.open(`${API_URL}${foto.url}`, '_blank')}
-          onLoad={() => { if (modelosListos) analizarImagen(); }}
+          onLoad={handleImageLoad}
         />
         <canvas
           ref={canvasRef}
@@ -123,23 +155,17 @@ function CeldaConFoto({ foto, onEliminar, modelosListos }) {
         >✕</button>
       </div>
 
-      {/* Botón reconocer */}
+      {/* Botón reconocer manualmente */}
       <button
         onClick={analizarImagen}
         disabled={analizando || !modelosListos}
         style={{
-          marginTop: '8px',
-          width: '100%',
-          padding: '7px 0',
+          marginTop: '8px', width: '100%', padding: '7px 0',
           background: analizando ? '#94a3b8' : '#f37021',
-          color: 'white',
-          border: 'none',
-          borderRadius: '20px',
+          color: 'white', border: 'none', borderRadius: '20px',
           cursor: analizando ? 'not-allowed' : 'pointer',
-          fontSize: '0.78rem',
-          fontWeight: '600',
-          fontFamily: 'Poppins, sans-serif',
-          transition: 'background 0.2s'
+          fontSize: '0.78rem', fontWeight: '600',
+          fontFamily: 'Poppins, sans-serif', transition: 'background 0.2s'
         }}
       >
         {!modelosListos ? '⏳ Cargando IA...' : analizando ? '⏳ Analizando...' : '🔍 Reconocer personas'}
@@ -150,10 +176,8 @@ function CeldaConFoto({ foto, onEliminar, modelosListos }) {
         <div style={{ marginTop: '6px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
           {etiquetas.map((e, i) => (
             <span key={i} style={{
-              padding: '3px 9px',
-              borderRadius: '20px',
-              fontSize: '0.75rem',
-              fontWeight: '600',
+              padding: '3px 9px', borderRadius: '20px',
+              fontSize: '0.75rem', fontWeight: '600',
               fontFamily: 'Poppins, sans-serif',
               background: e.reconocido ? '#dcfce7' : '#fff7ed',
               color: e.reconocido ? '#166534' : '#c2410c',
@@ -178,7 +202,6 @@ export default function GaleriaFrenteFotos() {
   const [error, setError] = useState(null);
   const [modelosListos, setModelosListos] = useState(false);
 
-  // Cargar modelos face-api.js al montar
   useEffect(() => {
     cargarModelos()
       .then(() => setModelosListos(true))
@@ -203,7 +226,6 @@ export default function GaleriaFrenteFotos() {
       const data = await getFotosPorFrente(id);
       setGrupos(data);
     } catch (err) {
-      console.error('Error al cargar fotos:', err);
       setError('No se pudieron cargar las fotos. Verifica que el servidor esté corriendo.');
     } finally {
       setLoading(false);
@@ -216,7 +238,6 @@ export default function GaleriaFrenteFotos() {
       await uploadFoto(frente.id, categoria, groupId, archivo);
       await cargarGrupos(frente.id);
     } catch (err) {
-      console.error('Error al subir foto:', err);
       setError('Ocurrió un error al guardar la foto. Inténtalo de nuevo.');
     }
   }, [frente]);
@@ -227,7 +248,6 @@ export default function GaleriaFrenteFotos() {
         await deleteFoto(fotoId);
         await cargarGrupos(frente.id);
       } catch (err) {
-        console.error('Error al eliminar foto:', err);
         setError('Error al eliminar la foto.');
       }
     }
@@ -239,44 +259,39 @@ export default function GaleriaFrenteFotos() {
         await eliminarGrupoCompleto(frente.id, groupId);
         await cargarGrupos(frente.id);
       } catch (err) {
-        console.error('Error al eliminar grupo:', err);
         setError('Error al eliminar el grupo.');
       }
     }
-  }, [frente, cargarGrupos]);
+  }, [frente]);
 
   const agregarNuevoSet = async () => {
     try {
       await crearGrupoVacio(frente.id);
       await cargarGrupos(frente.id);
     } catch (err) {
-      console.error('Error al crear nuevo set:', err);
       setError('No se pudo crear el nuevo set. Verifica el servidor.');
     }
   };
 
-  if (error) {
-    return (
-      <div style={{ padding: '40px', textAlign: 'center', color: '#fff', background: '#000000aa' }}>
-        <h2>Error</h2>
-        <p>{error}</p>
-        <button onClick={() => window.location.reload()} style={{ padding: '8px 16px', background: '#f37021', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
-          Recargar página
-        </button>
-      </div>
-    );
-  }
+  if (error) return (
+    <div style={{ padding: '40px', textAlign: 'center', color: '#fff', background: '#000000aa' }}>
+      <h2>Error</h2><p>{error}</p>
+      <button onClick={() => window.location.reload()} style={{ padding: '8px 16px', background: '#f37021', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+        Recargar página
+      </button>
+    </div>
+  );
 
   if (!frente || loading) return <div style={{ padding: '20px', color: 'white' }}>Cargando...</div>;
 
-  // ─── Estilos (sin cambios respecto al original) ───────────────────────────
+  // ─── Estilos (sin cambios) ────────────────────────────────────────────────
   const containerStyle = {
-    background: `linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('/logos/FONDO.jpg')`,
+    background: `linear-gradient(rgba(255,255,255,0.4),rgba(255,255,255,0.4)),url('/logos/FONDO.jpg')`,
     backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed',
     flex: 1, padding: '30px', boxSizing: 'border-box', minHeight: 'calc(100vh - 80px)'
   };
   const bannerStyle = {
-    borderLeft: '5px solid #f37021', paddingLeft: '15px',
+    borderLeft: '5px solid #f37021',
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     backgroundColor: 'white', padding: '20px', borderRadius: '8px',
     boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '30px'
@@ -293,29 +308,22 @@ export default function GaleriaFrenteFotos() {
     backgroundColor: '#f37021', color: 'white', border: 'none', padding: '12px 20px',
     borderRadius: '40px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', marginTop: '15px'
   };
-  const categoriaTituloStyle = {
-    fontSize: '1.5rem', fontWeight: 'bold', color: '#002640', marginBottom: '10px', textAlign: 'center'
-  };
+  const categoriaTituloStyle = { fontSize: '1.5rem', fontWeight: 'bold', color: '#002640', marginBottom: '10px', textAlign: 'center' };
   const deleteGroupButtonStyle = {
     position: 'absolute', top: '-15px', right: '-10px', backgroundColor: '#ff4444', color: 'white',
     border: 'none', borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer',
     fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.2)', transition: 'transform 0.2s', zIndex: 2
+    boxShadow: '0 2px 5px rgba(0,0,0,0.2)', zIndex: 2
   };
 
   const MarcoVacio = ({ groupId, categoria, onSubir }) => {
     const inputRef = useRef(null);
-    const handleFileChange = (e) => {
-      if (e.target.files[0]) {
-        onSubir(groupId, categoria, e.target.files[0]);
-        e.target.value = '';
-      }
-    };
     return (
       <div style={emptyFrameStyle}>
         <div style={{ fontSize: '3rem', marginBottom: '10px' }}>📷</div>
         <button style={emptyButtonStyle} onClick={() => inputRef.current.click()}>+ Subir foto</button>
-        <input type="file" ref={inputRef} accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
+        <input type="file" ref={inputRef} accept="image/*" style={{ display: 'none' }}
+          onChange={(e) => { if (e.target.files[0]) { onSubir(groupId, categoria, e.target.files[0]); e.target.value = ''; } }} />
       </div>
     );
   };
@@ -324,32 +332,26 @@ export default function GaleriaFrenteFotos() {
     <div style={containerStyle}>
       <SearchBar />
 
-      {/* Indicador estado modelos IA */}
-      {!modelosListos && (
-        <div style={{
-          background: '#fff3cd', border: '1px solid #ffc107', borderRadius: '8px',
-          padding: '10px 16px', marginBottom: '16px', fontSize: '0.85rem',
-          color: '#856404', display: 'flex', alignItems: 'center', gap: '8px'
-        }}>
-          ⏳ Cargando modelos de reconocimiento facial...
-        </div>
-      )}
-      {modelosListos && (
-        <div style={{
-          background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: '8px',
-          padding: '10px 16px', marginBottom: '16px', fontSize: '0.85rem',
-          color: '#065f46', display: 'flex', alignItems: 'center', gap: '8px'
-        }}>
-          ✅ Reconocimiento facial listo
-        </div>
-      )}
+      {/* Indicador estado IA */}
+      <div style={{
+        background: modelosListos ? '#d1fae5' : '#fff3cd',
+        border: `1px solid ${modelosListos ? '#6ee7b7' : '#ffc107'}`,
+        borderRadius: '8px', padding: '10px 16px', marginBottom: '16px',
+        fontSize: '0.85rem', color: modelosListos ? '#065f46' : '#856404',
+        display: 'flex', alignItems: 'center', gap: '8px'
+      }}>
+        {modelosListos
+          ? '✅ Reconocimiento facial listo — las personas detectadas se guardan automáticamente para búsqueda'
+          : '⏳ Cargando modelos de reconocimiento facial...'}
+      </div>
 
       <div style={bannerStyle}>
         <div style={{ flex: 1 }}>
           <h2 style={{ margin: 0, color: '#002640', fontSize: '1.4rem' }}>{frente.nombreCompleto}</h2>
           <p style={{ margin: '5px 0 0', color: '#f37021', fontWeight: 'bold' }}>FRENTE #{frente.id.toString().padStart(2, '0')}</p>
         </div>
-        <button onClick={() => navigate('/banco-fotos/plan2/frentes')} style={{ backgroundColor: '#ddd', border: 'none', padding: '8px 16px', borderRadius: '5px', cursor: 'pointer' }}>
+        <button onClick={() => navigate('/banco-fotos/plan2/frentes')}
+          style={{ backgroundColor: '#ddd', border: 'none', padding: '8px 16px', borderRadius: '5px', cursor: 'pointer' }}>
           ← Volver
         </button>
       </div>
@@ -364,21 +366,18 @@ export default function GaleriaFrenteFotos() {
         <div key={grupo.id} style={grupoContainerStyle}>
           <button style={deleteGroupButtonStyle} onClick={() => eliminarGrupo(grupo.id)}>🗑️</button>
           <div style={grupoRowStyle}>
-            {/* ANTES */}
             <div style={celdaStyle}>
               <div style={categoriaTituloStyle}>📸 ANTES</div>
               {grupo.antes
                 ? <CeldaConFoto foto={grupo.antes} onEliminar={eliminarFoto} modelosListos={modelosListos} />
                 : <MarcoVacio groupId={grupo.id} categoria="antes" onSubir={subirFotoAGrupo} />}
             </div>
-            {/* DURANTE */}
             <div style={celdaStyle}>
               <div style={categoriaTituloStyle}>🛠️ DURANTE</div>
               {grupo.durante
                 ? <CeldaConFoto foto={grupo.durante} onEliminar={eliminarFoto} modelosListos={modelosListos} />
                 : <MarcoVacio groupId={grupo.id} categoria="durante" onSubir={subirFotoAGrupo} />}
             </div>
-            {/* DESPUÉS */}
             <div style={celdaStyle}>
               <div style={categoriaTituloStyle}>✨ DESPUÉS</div>
               {grupo.despues
@@ -390,13 +389,10 @@ export default function GaleriaFrenteFotos() {
       ))}
 
       <div style={{ textAlign: 'center', marginTop: '20px' }}>
-        <button
-          onClick={agregarNuevoSet}
-          style={{
-            backgroundColor: 'rgba(0,86,145,0.8)', color: 'white', border: 'none',
-            padding: '12px 24px', borderRadius: '40px', fontWeight: 'bold', cursor: 'pointer'
-          }}
-        >
+        <button onClick={agregarNuevoSet} style={{
+          backgroundColor: 'rgba(0,86,145,0.8)', color: 'white', border: 'none',
+          padding: '12px 24px', borderRadius: '40px', fontWeight: 'bold', cursor: 'pointer'
+        }}>
           + Agregar nuevo set de fotos
         </button>
       </div>
