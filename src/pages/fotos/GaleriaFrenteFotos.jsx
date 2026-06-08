@@ -21,7 +21,7 @@ async function cargarModelos() {
   modelosCargados = true;
 }
 
-// ─── Guardar etiquetas en SQLite via backend ──────────────────────────────────
+// ─── Guardar etiquetas en SQLite (solo para búsqueda, silencioso) ─────────────
 async function guardarEtiquetas(fotoId, etiquetas) {
   try {
     await fetch(`${API_URL}/api/fotos/etiquetas`, {
@@ -34,18 +34,14 @@ async function guardarEtiquetas(fotoId, etiquetas) {
   }
 }
 
-// ─── Subcomponente: celda con foto + reconocimiento facial ────────────────────
+// ─── Subcomponente: foto con reconocimiento en segundo plano ──────────────────
+// Sin canvas visible, sin botón, sin etiquetas — todo ocurre silenciosamente
 function CeldaConFoto({ foto, onEliminar, modelosListos }) {
   const imgRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [etiquetas, setEtiquetas] = useState([]);
-  const [analizando, setAnalizando] = useState(false);
   const yaAnalizado = useRef(false);
 
-  const analizarImagen = useCallback(async () => {
+  const analizarSilencioso = useCallback(async () => {
     if (!modelosListos || !imgRef.current) return;
-    setAnalizando(true);
-    setEtiquetas([]);
 
     try {
       const img = imgRef.current;
@@ -55,19 +51,10 @@ function CeldaConFoto({ foto, onEliminar, modelosListos }) {
         .withFaceLandmarks()
         .withFaceDescriptors();
 
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (detecciones.length === 0) return;
 
-      if (detecciones.length === 0) {
-        setAnalizando(false);
-        return;
-      }
-
-      // Convertir Float32Array → Array normal
       const vectores = detecciones.map(d => Array.from(d.descriptor));
 
-      // Enviar al backend de reconocimiento
       const res = await fetch(`${API_URL}/api/reconocer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -76,118 +63,44 @@ function CeldaConFoto({ foto, onEliminar, modelosListos }) {
       const data = await res.json();
       const resultados = data.identificados || [];
 
-      // Dibujar cajas y nombres en el canvas
-      const dims = faceapi.matchDimensions(canvas, img, true);
-      const resized = faceapi.resizeResults(detecciones, dims);
-
-      resized.forEach((det, i) => {
-        const box = det.detection.box;
-        const r = resultados[i] || { nombre: '?', score: 0, reconocido: false };
-        const color = r.reconocido ? '#22c55e' : '#f97316';
-        const label = r.reconocido ? `${r.nombre} (${r.score}%)` : 'Desconocido';
-
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(box.x, box.y, box.width, box.height);
-
-        ctx.font = 'bold 12px Poppins, sans-serif';
-        const tw = ctx.measureText(label).width + 10;
-        ctx.fillStyle = color;
-        ctx.fillRect(box.x, box.y - 22, tw, 20);
-        ctx.fillStyle = 'white';
-        ctx.fillText(label, box.x + 5, box.y - 7);
-      });
-
-      setEtiquetas(resultados);
-
-      // Guardar en SQLite (solo personas reconocidas, una vez por foto)
+      // Solo guardar en SQLite las personas reconocidas
       const reconocidas = resultados.filter(r => r.reconocido);
       if (reconocidas.length > 0) {
         await guardarEtiquetas(foto.id, reconocidas);
       }
-
     } catch (err) {
-      console.error('[Reconocimiento] Error:', err);
-    } finally {
-      setAnalizando(false);
+      console.error('[Reconocimiento silencioso] Error:', err);
     }
   }, [modelosListos, foto.id]);
 
-  // Analizar automáticamente al cargar la imagen (solo la primera vez)
   const handleImageLoad = useCallback(() => {
     if (modelosListos && !yaAnalizado.current) {
       yaAnalizado.current = true;
-      analizarImagen();
+      analizarSilencioso();
     }
-  }, [modelosListos, analizarImagen]);
+  }, [modelosListos, analizarSilencioso]);
 
   return (
-    <div style={{ width: '100%' }}>
-      {/* Contenedor imagen + canvas superpuesto */}
-      <div style={{
-        position: 'relative', width: '100%',
-        borderRadius: '12px', overflow: 'hidden',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-      }}>
-        <img
-          ref={imgRef}
-          src={`${API_URL}${foto.url}`}
-          alt="foto"
-          crossOrigin="anonymous"
-          style={{ width: '100%', height: 'auto', maxHeight: '350px', objectFit: 'cover', display: 'block' }}
-          onClick={() => window.open(`${API_URL}${foto.url}`, '_blank')}
-          onLoad={handleImageLoad}
-        />
-        <canvas
-          ref={canvasRef}
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
-        />
-        {/* Botón eliminar */}
-        <button
-          style={{
-            position: 'absolute', top: '8px', right: '8px',
-            backgroundColor: 'rgba(0,0,0,0.6)', color: 'white',
-            border: 'none', borderRadius: '50%', width: '28px', height: '28px',
-            cursor: 'pointer', fontSize: '14px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}
-          onClick={() => onEliminar(foto.id)}
-        >✕</button>
-      </div>
-
-      {/* Botón reconocer manualmente */}
+    <div style={{ position: 'relative', width: '100%', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+      <img
+        ref={imgRef}
+        src={`${API_URL}${foto.url}`}
+        alt="foto"
+        crossOrigin="anonymous"
+        style={{ width: '100%', height: 'auto', maxHeight: '350px', objectFit: 'cover', display: 'block', cursor: 'pointer' }}
+        onClick={() => window.open(`${API_URL}${foto.url}`, '_blank')}
+        onLoad={handleImageLoad}
+      />
       <button
-        onClick={analizarImagen}
-        disabled={analizando || !modelosListos}
         style={{
-          marginTop: '8px', width: '100%', padding: '7px 0',
-          background: analizando ? '#94a3b8' : '#f37021',
-          color: 'white', border: 'none', borderRadius: '20px',
-          cursor: analizando ? 'not-allowed' : 'pointer',
-          fontSize: '0.78rem', fontWeight: '600',
-          fontFamily: 'Poppins, sans-serif', transition: 'background 0.2s'
+          position: 'absolute', top: '8px', right: '8px',
+          backgroundColor: 'rgba(0,0,0,0.6)', color: 'white',
+          border: 'none', borderRadius: '50%', width: '28px', height: '28px',
+          cursor: 'pointer', fontSize: '14px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}
-      >
-        {!modelosListos ? '⏳ Cargando IA...' : analizando ? '⏳ Analizando...' : '🔍 Reconocer personas'}
-      </button>
-
-      {/* Etiquetas resultado */}
-      {etiquetas.length > 0 && (
-        <div style={{ marginTop: '6px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-          {etiquetas.map((e, i) => (
-            <span key={i} style={{
-              padding: '3px 9px', borderRadius: '20px',
-              fontSize: '0.75rem', fontWeight: '600',
-              fontFamily: 'Poppins, sans-serif',
-              background: e.reconocido ? '#dcfce7' : '#fff7ed',
-              color: e.reconocido ? '#166534' : '#c2410c',
-              border: `1px solid ${e.reconocido ? '#86efac' : '#fed7aa'}`
-            }}>
-              {e.reconocido ? `✓ ${e.nombre} ${e.score}%` : '✗ Desconocido'}
-            </span>
-          ))}
-        </div>
-      )}
+        onClick={() => onEliminar(foto.id)}
+      >✕</button>
     </div>
   );
 }
@@ -284,7 +197,7 @@ export default function GaleriaFrenteFotos() {
 
   if (!frente || loading) return <div style={{ padding: '20px', color: 'white' }}>Cargando...</div>;
 
-  // ─── Estilos (sin cambios) ────────────────────────────────────────────────
+  // ─── Estilos (idénticos al original) ─────────────────────────────────────
   const containerStyle = {
     background: `linear-gradient(rgba(255,255,255,0.4),rgba(255,255,255,0.4)),url('/logos/FONDO.jpg')`,
     backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed',
@@ -331,19 +244,6 @@ export default function GaleriaFrenteFotos() {
   return (
     <div style={containerStyle}>
       <SearchBar />
-
-      {/* Indicador estado IA */}
-      <div style={{
-        background: modelosListos ? '#d1fae5' : '#fff3cd',
-        border: `1px solid ${modelosListos ? '#6ee7b7' : '#ffc107'}`,
-        borderRadius: '8px', padding: '10px 16px', marginBottom: '16px',
-        fontSize: '0.85rem', color: modelosListos ? '#065f46' : '#856404',
-        display: 'flex', alignItems: 'center', gap: '8px'
-      }}>
-        {modelosListos
-          ? '✅ Reconocimiento facial listo — las personas detectadas se guardan automáticamente para búsqueda'
-          : '⏳ Cargando modelos de reconocimiento facial...'}
-      </div>
 
       <div style={bannerStyle}>
         <div style={{ flex: 1 }}>
