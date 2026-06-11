@@ -1,15 +1,14 @@
-/* Animación suave para los 4 banners al pasar el mouse */
+/* ─── Hover banners (solo escritorio, táctil no lo necesita) ── */
 .banner-fase {
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
-
 .banner-fase:hover {
   transform: translateY(-10px);
   box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
-  border-color: #f37021 !important; /* El color de realce para la Catedral */
+  border-color: #f37021 !important;
 }
 
-/* Efecto de cristal para el contenido sobre el fondo de la imagen */
+/* Efecto cristal */
 .glass-effect {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
@@ -17,101 +16,86 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Contenedor principal para ajustar el margen por el Sidebar fijo */
-.main-content {
-  margin-left: 250px;
-  width: calc(100% - 250px);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  margin-left: 0 !important;
-  width: 100% !important;
-  padding: 15px !important;
-}
+/* ════════════════════════════════════════════════════
+   MÓVIL  —  pantallas ≤ 768px
+   ════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
 
-.grid-2-columns {
+  /* iOS Safari no soporta background-attachment:fixed */
+  * { background-attachment: scroll !important; }
+
+  /* ── Footer apilado verticalmente ── */
+  .footer-root {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 12px !important;
+    padding: 15px 20px !important;
+  }
+  .footer-root > div {
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  /* ── Inicio: 1 columna ── */
+  .inicio-grid {
     grid-template-columns: 1fr !important;
     gap: 20px !important;
-  }
-  .grid-fotos, .grid-cards {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
-    gap: 15px !important;
+    padding: 0 15px !important;
   }
 
-  /* Header fijo */
-  header {
-    padding: 6px 12px !important;
-  }
-  header h1 {
-    font-size: 0.7rem !important;
-  }
-  header p {
-    font-size: 0.6rem !important;
-  }
-  header img {
-    height: 35px !important;
-  }
-
-  /* Footer */
-  footer {
-    flex-direction: column !important;
-    text-align: center !important;
-    gap: 15px !important;
+  /* ── Fase2: contenedor más compacto ── */
+  .fase2-container {
     padding: 15px !important;
   }
-  footer > div {
-    justify-content: center !important;
+
+  /* ── Tarjeta de informe: apilada en móvil ── */
+  .report-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .report-card-actions {
+    align-self: flex-end !important;
+  }
+  .report-card-meta {
+    flex-direction: column !important;
+    gap: 4px !important;
+  }
+
+  /* ── Encabezado de frente: apilado ── */
+  .frente-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .frente-header button {
     width: 100% !important;
   }
 
-  /* Botón toggle del sidebar */
-  .btn-toggle {
-    top: 85px !important;
-    left: 10px !important;
-    padding: 6px 10px !important;
-    font-size: 0.8rem !important;
+  /* ── Modal responsive ── */
+  .modal-content {
+    padding: 20px !important;
+    width: calc(100vw - 30px) !important;
+    max-width: 100% !important;
   }
+  .modal-row {
+    flex-direction: column !important;
+  }
+  .modal-row input {
+    width: 100% !important;
+  }
+}
 
-  /* Sidebar en modo superpuesto */
-  .sidebar {
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    width: 80% !important;
-    max-width: 280px;
-  }
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  /* Tarjetas de banners de inicio */
-  .banner-fase {
-    padding: 50px 15px !important;
-    font-size: 1rem !important;
-  }
-  .banner-fase p {
-    font-size: 0.75rem !important;
-  }
-
-  /* Contenedor de búsqueda */
-  .search-container input {
-    max-width: 90% !important;
-    padding: 10px 15px !important;
-  }
-
-  /* Títulos principales */
-  h1, .main-title {
-    font-size: 1.8rem !important;
-  }
-  h2 {
-    font-size: 1.2rem !important;
-  }
-
-/* Para pantallas muy pequeñas (menos de 480px) */
+/* ════════════════════════════════════════════════════
+   MUY PEQUEÑO  —  pantallas ≤ 480px
+   ════════════════════════════════════════════════════ */
 @media (max-width: 480px) {
-  .grid-fotos, .grid-cards {
-    grid-template-columns: 1fr !important;
-  }
   .banner-fase {
-    padding: 40px 10px !important;
+    padding: 40px 12px !important;
+    font-size: 0.95rem !important;
+  }
+  .inicio-grid {
+    gap: 15px !important;
   }
 }
