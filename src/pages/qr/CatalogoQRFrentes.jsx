@@ -10,7 +10,7 @@ export default function CatalogoQRFrentes() {
 
   // URL FIJA: Cambia esto por tu dominio oficial final (ej. https://catedralmerida.com)
   // Esto garantiza que el código QR nunca cambie, independientemente de dónde lo abras.
-  const DOMINIO_OFICIAL = 'https://catedralmerida.tu-dominio.com';
+  const DOMINIO_OFICIAL = 'https://proyecto-catedral.vercel.app/';
 
   // --- FUNCIÓN PARA IMPRIMIR EL CATÁLOGO COMPLETO ---
   const handleImprimirCatalogo = () => {
