@@ -198,7 +198,7 @@ export default function FrenteDetalle() {
                 <input name="numero" placeholder="N° de Informe" value={nuevoInforme.numero} onChange={manejarCambio} required style={{ ...inputStyle, width: isMobile ? '100%' : '50%' }} />
                 <input name="fecha" type="date" value={nuevoInforme.fecha} onChange={manejarCambio} required style={{ ...inputStyle, width: isMobile ? '100%' : '50%' }} />
               </div>
-              <input name="enlaceCanva" placeholder="Enlace (Canva, Drive...)" value={nuevoInforme.enlaceCanva} onChange={manejarCambio} required style={inputStyle} />
+              <input name="enlaceCanva" placeholder="Enlace (Canva)" value={nuevoInforme.enlaceCanva} onChange={manejarCambio} required style={inputStyle} />
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
                 <button type="submit" style={{ backgroundColor: '#005691', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
                   Guardar

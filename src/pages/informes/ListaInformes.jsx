@@ -127,6 +127,9 @@ export default function ListaInformes({ titulo, subtitulo, tipo, subtipo, frente
     enlaceCanva: ''
   });
 
+  // EVALUACIÓN DINÁMICA: Si el 'tipo' de informe está en esta lista, ocultamos el campo 'número'
+  const requiereNumero = !['divulgacion', 'especiales', 'recorridos', 'utilitarios', 'avance'].includes(tipo);
+
   const cargarInformes = async () => {
     setLoading(true);
     setError(null);
@@ -169,7 +172,8 @@ export default function ListaInformes({ titulo, subtitulo, tipo, subtipo, frente
         subtipo: subtipo || null,
         frente_id: frenteId || null,
         nombre: nuevoInforme.nombre,
-        numero: nuevoInforme.numero,
+        // Si no requiere número, enviamos null o string vacío
+        numero: requiereNumero ? nuevoInforme.numero : '',
         fecha: nuevoInforme.fecha,
         enlaceCanva: urlFinal,
       };
@@ -242,7 +246,7 @@ export default function ListaInformes({ titulo, subtitulo, tipo, subtipo, frente
           <button onClick={() => setShowModal(true)} style={addBtnStyle}>+ Agregar Informe</button>
         </div>
 
-        {/* Listado de informes (sin búsqueda local) */}
+        {/* Listado de informes */}
         <div style={{ marginTop: '25px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
           {informes.length === 0 ? (
             <p style={{ textAlign: 'center', color: '#242424', marginTop: '50px' }}>No hay registros.</p>
@@ -253,7 +257,8 @@ export default function ListaInformes({ titulo, subtitulo, tipo, subtipo, frente
                   <h3 style={{ color: '#005691', margin: '0 0 5px 0' }}>{inf.nombre}</h3>
                   <div style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', color: '#555' }}>
                     <span><strong>📅 Fecha:</strong> {inf.fecha}</span>
-                    <span><strong># N° de Informe:</strong> {inf.numero}</span>
+                    {/* Renderiza el N° de informe solo si la sección lo requiere */}
+                    {requiereNumero && <span><strong># N° de Informe:</strong> {inf.numero}</span>}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -275,11 +280,16 @@ export default function ListaInformes({ titulo, subtitulo, tipo, subtipo, frente
             </h3>
             <form onSubmit={guardarRegistro} style={{ display: 'flex', flexDirection: 'column' }}>
               <input name="nombre" placeholder="Nombre del Informe" value={nuevoInforme.nombre} onChange={manejarCambio} required style={inputStyle} />
+              
               <div style={{ display: 'flex', gap: '10px' }}>
-                <input name="numero" placeholder="N° de Informe" value={nuevoInforme.numero} onChange={manejarCambio} required style={{ ...inputStyle, width: '50%' }} />
-                <input name="fecha" type="date" value={nuevoInforme.fecha} onChange={manejarCambio} required style={{ ...inputStyle, width: '50%' }} />
+                {/* El input de número aparece condicionado. Si no se muestra, el de fecha ocupa el 100% del ancho */}
+                {requiereNumero && (
+                  <input name="numero" placeholder="N° de Informe" value={nuevoInforme.numero} onChange={manejarCambio} required style={{ ...inputStyle, width: '50%' }} />
+                )}
+                <input name="fecha" type="date" value={nuevoInforme.fecha} onChange={manejarCambio} required style={{ ...inputStyle, width: requiereNumero ? '50%' : '100%' }} />
               </div>
-              <input name="enlaceCanva" placeholder="Enlace (Canva, Drive...)" value={nuevoInforme.enlaceCanva} onChange={manejarCambio} required style={inputStyle} />
+
+              <input name="enlaceCanva" placeholder="Enlace (Canva)" value={nuevoInforme.enlaceCanva} onChange={manejarCambio} required style={inputStyle} />
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
                 <button type="submit" style={saveBtnStyle}>Guardar</button>
                 <button type="button" onClick={() => setShowModal(false)} style={cancelBtnStyle}>Cancelar</button>
