@@ -107,7 +107,7 @@ function AppContent() {
             <Route path="/informes/divulgacion"               element={<Divulgacion />} />
             <Route path="/informes/avance"                    element={<Avance />} />
             <Route path="/informes/recorridos/:tipo"          element={<Recorridos />} />
-            <Route path="/informes/utilitarios/:tipo"         element={<Utilitarios />} />
+            <Route path="/informes/utilitarios"         element={<Utilitarios />} />
             <Route path="/buscar"                             element={<SearchResults />} />
             <Route path="*" element={<div style={{ padding: '20px', color: 'white' }}>Página no encontrada</div>} />
           </Routes>

@@ -8,10 +8,8 @@ export default function Sidebar({ isOpen, toggle }) {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [isRecorridosOpen,  setIsRecorridosOpen]  = useState(false);
-  const [isUtilitariosOpen, setIsUtilitariosOpen] = useState(false);
   const { conteos } = useInformes();
 
-  // En móvil el header mide ~50px; en escritorio ~80px
   const topOffset = isMobile ? '50px' : '80px';
 
   const sidebarStyle = {
@@ -62,8 +60,10 @@ export default function Sidebar({ isOpen, toggle }) {
 
   const isActive = (path) => location.pathname === path;
 
-  // Al hacer clic en un enlace en móvil, cierra el sidebar
-  const handleLinkClick = () => { if (isMobile) toggle(); };
+  // ESTO HACE QUE SE CIERRE SIEMPRE AL HACER CLIC (Móvil y Escritorio)
+  const handleLinkClick = () => { 
+    if (isOpen) toggle(); 
+  };
 
   return (
     <>
@@ -93,6 +93,12 @@ export default function Sidebar({ isOpen, toggle }) {
             <span style={badgeStyle}>{conteos?.avance || 0}</span>
           </div>
 
+          {/* Utilitarios (UNIFICADO) */}
+          <div style={{ ...menuItemWrapper, backgroundColor: isActive('/informes/utilitarios') ? 'rgba(255,255,255,0.15)' : 'transparent' }}>
+            <Link to="/informes/utilitarios" style={linkStyle} onClick={handleLinkClick}>📂 Informes Utilitarios</Link>
+            <span style={badgeStyle}>{conteos?.utilitarios || 0}</span>
+          </div>
+
           {/* Recorridos */}
           <div style={{ cursor: 'pointer' }}>
             <div style={menuItemWrapper} onClick={() => setIsRecorridosOpen(!isRecorridosOpen)}>
@@ -117,32 +123,20 @@ export default function Sidebar({ isOpen, toggle }) {
             )}
           </div>
 
-          {/* Utilitarios */}
-          <div style={{ cursor: 'pointer' }}>
-            <div style={menuItemWrapper} onClick={() => setIsUtilitariosOpen(!isUtilitariosOpen)}>
-              <span style={linkStyle}>📂 Inf. Utilitarios {isUtilitariosOpen ? '▲' : '▼'}</span>
-              <span style={badgeStyle}>{conteos?.utilitarios?.total || 0}</span>
-            </div>
-            {isUtilitariosOpen && (
-              <div style={subMenuListStyle}>
-                <div style={menuItemWrapper}>
-                  <Link to="/informes/utilitarios/inicial" style={subLinkStyle} onClick={handleLinkClick}>• Inicial</Link>
-                  <span style={subBadgeStyle}>{conteos?.utilitarios?.inicial || 0}</span>
-                </div>
-                <div style={menuItemWrapper}>
-                  <Link to="/informes/utilitarios/frente-secundario" style={subLinkStyle} onClick={handleLinkClick}>• Fte. Secundario</Link>
-                  <span style={subBadgeStyle}>{conteos?.utilitarios?.frenteSecundario || 0}</span>
-                </div>
-              </div>
-            )}
-          </div>
-
           <div style={{ ...menuItemWrapper, marginTop: '10px', backgroundColor: isActive('/banco-fotos') ? '#005691' : 'transparent' }}>
             <Link to="/banco-fotos" style={linkStyle} onClick={handleLinkClick}>🖼️ Banco de Fotos</Link>
           </div>
 
           <div style={{ ...menuItemWrapper, marginTop: '10px', backgroundColor: isActive('/catalogo-qr') ? '#005691' : 'transparent' }}>
             <Link to="/catalogo-qr" style={linkStyle} onClick={handleLinkClick}>📱 Catálogo de QRs</Link>
+          </div>
+
+          {/* CONTADOR TOTAL DE INFORMES EN SISTEMA */}
+          <div style={{ ...menuItemWrapper, borderTop: '1px solid rgba(255,255,255,0.2)', marginTop: '10px', paddingTop: '15px' }}>
+            <span style={{ color: 'white', fontWeight: 'bold', fontSize: '0.85rem' }}>Total Informes:</span>
+            <span style={{backgroundColor: '#f37021', color: 'white', padding: '3px 10px', borderRadius: '12px', fontSize: '0.8rem' }}>
+              {conteos?.totalGeneral || 0}
+            </span>
           </div>
 
           <div style={{ flex: 1 }} />

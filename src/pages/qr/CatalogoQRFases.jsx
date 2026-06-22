@@ -8,7 +8,7 @@ export default function CatalogoQRFases() {
   const navigate = useNavigate();
 
   const config = {
-    plan1: { titulo: 'PLAN MÉRIDA 465', fondo: '/logos/banner1.jpg', fases: [{ id: 1, nombre: 'FASE ÚNICA' }] },
+    plan1: { titulo: 'PLAN MÉRIDA 465', fondo: '/logos/banner1.jpg', fases: [{ id: 1, nombre: 'XX' }] },
     plan2: { titulo: 'PLAN DE RESTAURACIÓN INTEGRAL DE LA CATEDRAL', fondo: '/logos/banner2.jpg', fases: [
       { id: 1, nombre: 'FASE I' },
       { id: 2, nombre: 'FASE II' },
