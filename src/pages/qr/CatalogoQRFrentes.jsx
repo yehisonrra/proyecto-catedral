@@ -185,7 +185,7 @@ const handleImprimirCatalogo = () => {
               <img src="/logos/LOGO.png" alt="Proyecto">
             </div>
             <div class="banner-titulo">
-              <h2>PLAN DE RESTAURACIÓN INTEGRAL DEL MONUMENTO NACIONAL CATEDRAL DE MÉRIDA<br>BASILICA MENOR DE LA INMACULADA CONCEPCIÓN</h2>
+              <h2>PLAN DE RESTAURACIÓN INTEGRAL DEL MONUMENTO NACIONAL CATEDRAL DE MÉRIDA BASILICA MENOR DE LA INMACULADA CONCEPCIÓN</h2>
             </div>
             <div class="banner-logos">
               <img src="/logos/LOGO_CATEDRAL.png" alt="Catedral">
