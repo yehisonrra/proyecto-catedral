@@ -33,7 +33,10 @@ const handleImprimirCatalogo = () => {
           /* --- Diseño de la Portada --- */
           .portada { 
             page-break-after: always; 
-            height: 100vh; 
+            /* Condición: 95vh para móviles, 100vh para computadoras */
+            height: ${isMobile ? '95vh' : '100vh'}; 
+            ${isMobile ? 'max-height: 95vh; overflow: hidden;' : ''}
+            box-sizing: border-box;
             display: flex; 
             flex-direction: column; 
             justify-content: space-between; 
@@ -260,7 +263,7 @@ const handleImprimirCatalogo = () => {
     ventana.document.close();
 };
 
-  // --- FUNCIÓN PARA IMPRIMIR UN QR INDIVIDUAL ---
+ // --- FUNCIÓN PARA IMPRIMIR UN QR INDIVIDUAL ---
   const handleImprimirIndividual = (frente) => {
     const ventana = window.open('', '_blank');
     
@@ -272,7 +275,19 @@ const handleImprimirCatalogo = () => {
         <meta charset="UTF-8">
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Roboto', Arial, sans-serif; }
-          body { display: flex; justify-content: center; align-items: center; height: 100vh; background: white; }
+          
+          /* Elimina los márgenes predeterminados del navegador al imprimir */
+          @page { margin: 0; } 
+          
+          /* Condición para el alto dependiendo del dispositivo */
+          body { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: ${isMobile ? '95vh' : '100vh'}; 
+            overflow: hidden; /* Esto es clave para cortar cualquier desbordamiento a la página 2 */
+            background: white; 
+          }
           
           .ficha-qr {
             width: 10cm;
