@@ -137,8 +137,14 @@ export default function ListaInformes({ titulo, subtitulo, tipo, subtipo, frente
       const params = { tipo };
       if (subtipo) params.subtipo = subtipo;
       if (frenteId) params.frente_id = frenteId;
+      
       const data = await getInformes(params);
-      setInformes(data);
+      
+      // NUEVO: Ordenar los datos por fecha descendente (más recientes primero)
+      const datosOrdenados = data.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      
+      setInformes(datosOrdenados);
+      
       if (actualizarConteo) actualizarConteo();
     } catch (err) {
       console.error(err);
@@ -172,14 +178,13 @@ export default function ListaInformes({ titulo, subtitulo, tipo, subtipo, frente
         subtipo: subtipo || null,
         frente_id: frenteId || null,
         nombre: nuevoInforme.nombre,
-        // Si no requiere número, enviamos null o string vacío
         numero: requiereNumero ? nuevoInforme.numero : '',
         fecha: nuevoInforme.fecha,
         enlaceCanva: urlFinal,
       };
       await createInforme(payload);
       setShowModal(false);
-      setNuevoInforme({ nombre: '', numero: '', fecha: '', enlaceCanva: '' });
+      setNuevoInforme({ nombre: '', numero: '', fecha: new Date().toISOString().split('T')[0], enlaceCanva: '' });
       await cargarInformes();
     } catch (err) {
       alert('Error al guardar el informe');
@@ -257,7 +262,6 @@ export default function ListaInformes({ titulo, subtitulo, tipo, subtipo, frente
                   <h3 style={{ color: '#005691', margin: '0 0 5px 0' }}>{inf.nombre}</h3>
                   <div style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', color: '#555' }}>
                     <span><strong>📅 Fecha:</strong> {inf.fecha}</span>
-                    {/* Renderiza el N° de informe solo si la sección lo requiere */}
                     {requiereNumero && <span><strong># N° de Informe:</strong> {inf.numero}</span>}
                   </div>
                 </div>
@@ -282,7 +286,6 @@ export default function ListaInformes({ titulo, subtitulo, tipo, subtipo, frente
               <input name="nombre" placeholder="Nombre del Informe" value={nuevoInforme.nombre} onChange={manejarCambio} required style={inputStyle} />
               
               <div style={{ display: 'flex', gap: '10px' }}>
-                {/* El input de número aparece condicionado. Si no se muestra, el de fecha ocupa el 100% del ancho */}
                 {requiereNumero && (
                   <input name="numero" placeholder="N° de Informe" value={nuevoInforme.numero} onChange={manejarCambio} required style={{ ...inputStyle, width: '50%' }} />
                 )}

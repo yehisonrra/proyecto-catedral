@@ -5,11 +5,11 @@ import { getInformes } from '../../api/informes';
 
 export const datosFase2 = [
   { id: 1, nombreCompleto: "Rehabilitación y restauración del sistema de cornisas.", nombre: "CORNISAS", imagen: "/logos/frente1.jpg" },
-  { id: 2, nombreCompleto: "Restauración en cúpula central (2/3 fases).", nombre: "CÚPULA CENTRAL", imagen: "/logos/frente2.png" },
+  { id: 2, nombreCompleto: "Restauración en cúpula central (2/3 fases).", nombre: "CÚPULA CENTRAL", imagen: "/logos/frente2.jpeg" },
   { id: 3, nombreCompleto: "Ampliación de canales nuevas para el proyecto integral.", nombre: "CANALES", imagen: "/logos/frente3.jpg" },
   { id: 4, nombreCompleto: "Instalaciones eléctricas y seguridad - Pai (1era de tres fases).", nombre: "INSTALACIONES ELÉCTRICAS Y SEGURIDAD", imagen: "/logos/frente4.jpg" },
   { id: 5, nombreCompleto: "Consolidación de losas planas posteriores suroeste.", nombre: "LOSAS PLANAS - SUROESTE", imagen: "/logos/frente5.jpg" },
-  { id: 6, nombreCompleto: "Consolidación de fachada lat. suroeste.", nombre: "CONSOLIDACIÓN DE FACHADA SO", imagen: "/logos/frente6.jpg" },
+  { id: 6, nombreCompleto: "Consolidación de fachada lat. suroeste.", nombre: "CONSOLIDACIÓN DE FACHADA SO", imagen: "/logos/frente6.png" },
   { id: 7, nombreCompleto: "Restauración de las fachadas desde losas planas a tejado de lateral noreste-suroeste y posterior.", nombre: "REST. DE LAS FACHADAS NE-SO Y POST", imagen: "/logos/frente7.jpg" },
   { id: 8, nombreCompleto: "Restauración de la capilla el sagrario 1ra de 2 fases.", nombre: "CAPILLA EL SAGRARIO", imagen: "/logos/frente8.jpg" },
   { id: 9, nombreCompleto: "Rehabilitación de otros espacios internos.", nombre: "ESPACIOS INTERNOS", imagen: "/logos/frente9.jpg" },
@@ -26,13 +26,13 @@ export const datosFase2 = [
   { id: 20, nombreCompleto: "Restauración de fachada lateral noreste (edificio testigo).", nombre: "FACHADA LAT. NORESTE", imagen: "/logos/frente20.jpg" },
   { id: 21, nombreCompleto: "Restauración de fachada principal (2 de 3 fases).", nombre: "FACHADA PRINCIPAL", imagen: "/logos/frente21.jpg" },
   { id: 22, nombreCompleto: "Consolidación de restauración de los cupulines e interior de cupulinos lateral suroeste.", nombre: "CUPULINES E INTERIOR LAT. SO", imagen: "/logos/frente22.jpg" },
-  { id: 23, nombreCompleto: "Construcción de bajantes y rehabilitación de bajantes empotrados.", nombre: "BAJANTES", imagen: "/logos/frente23.jpg" },
+  { id: 23, nombreCompleto: "Construcción de bajantes y rehabilitación de bajantes empotrados.", nombre: "BAJANTES", imagen: "/logos/frente23.jpeg" },
   { id: 24, nombreCompleto: "Restauración interna de torre norte (1 de 2 fases).", nombre: "TORRE NORTE (INTERNA)", imagen: "/logos/frente24.jpg" },
   { id: 25, nombreCompleto: "Consolidación de espacio museográfico para lapidario - jardín", nombre: "ESPACIO MUSEOGRÁFICO", imagen: "/logos/frente25.jpg" },
   { id: 26, nombreCompleto: "Exposición del imaginario religioso consolidado (custodio).", nombre: "CONS. IMAGINARIO RELIGIOSO", imagen: "/logos/frente26.jpg" },
   { id: 27, nombreCompleto: "Restauración de la fachada externa desde losas planas a tejado lateral suroeste.", nombre: "FACHADA EXTERNA LAT. SO", imagen: "/logos/frente27.jpg" },
   { id: 28, nombreCompleto: "Restauración de fachada posterior suroeste.", nombre: "FACHADA POSTERIOR SO", imagen: "/logos/frente28.jpg" },
-  { id: 29, nombreCompleto: "Impermeabilización del sistema de losas de cupulines lateral noreste.", nombre: "LOSAS DE CUPULINES LAT. NORESTE", imagen: "/logos/frente29.jpg" },
+  { id: 29, nombreCompleto: "Impermeabilización del sistema de losas de cupulines lateral noreste.", nombre: "LOSAS DE CUPULINES LAT. NORESTE", imagen: "/logos/frente29.png" },
   { id: 30, nombreCompleto: "Restauración de la fachada externa desde losas planas a tejado lateral noreste.", nombre: "FACHADA EXTERNA LAT. NO", imagen: "/logos/frente30.png" }
 ];
 

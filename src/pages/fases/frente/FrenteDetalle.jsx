@@ -31,7 +31,28 @@ export default function FrenteDetalle() {
     setLoading(true); setError(null);
     try {
       const data = await getInformes({ tipo: 'frente', frente_id: frenteId });
-      setInformes(data);
+      
+      // NUEVO ORDENAMIENTO: Por el tercer bloque del código (ej. "00" en "02-03-00-01-001")
+      const datosOrdenados = data.sort((a, b) => {
+        const obtenerTercerBloque = (numString) => {
+          if (!numString) return -1;
+          const partes = numString.split('-');
+          // Verificamos que tenga al menos 3 partes (índice 2)
+          if (partes.length >= 3) {
+            const valor = parseInt(partes[2], 10);
+            return isNaN(valor) ? -1 : valor;
+          }
+          return -1;
+        };
+
+        const valorA = obtenerTercerBloque(a.numero);
+        const valorB = obtenerTercerBloque(b.numero);
+
+        // Orden descendente (el mayor va primero)
+        return valorB - valorA;
+      });
+
+      setInformes(datosOrdenados);
     } catch { setError('No se pudieron cargar los informes. Verifica que el servidor esté corriendo.'); }
     finally  { setLoading(false); }
   };
@@ -195,7 +216,7 @@ export default function FrenteDetalle() {
             <form onSubmit={guardarRegistro} style={{ display: 'flex', flexDirection: 'column' }}>
               <input name="nombre" placeholder="Nombre del Informe" value={nuevoInforme.nombre} onChange={manejarCambio} required style={inputStyle} />
               <div className="modal-row" style={{ display: 'flex', gap: '10px', flexDirection: isMobile ? 'column' : 'row' }}>
-                <input name="numero" placeholder="N° de Informe" value={nuevoInforme.numero} onChange={manejarCambio} required style={{ ...inputStyle, width: isMobile ? '100%' : '50%' }} />
+                <input name="numero" placeholder="N° de Informe (Ej: 02-03-00-01-001)" value={nuevoInforme.numero} onChange={manejarCambio} required style={{ ...inputStyle, width: isMobile ? '100%' : '50%' }} />
                 <input name="fecha" type="date" value={nuevoInforme.fecha} onChange={manejarCambio} required style={{ ...inputStyle, width: isMobile ? '100%' : '50%' }} />
               </div>
               <input name="enlaceCanva" placeholder="Enlace (Canva)" value={nuevoInforme.enlaceCanva} onChange={manejarCambio} required style={inputStyle} />

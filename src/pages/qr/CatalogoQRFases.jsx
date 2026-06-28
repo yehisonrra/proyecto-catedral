@@ -1,11 +1,11 @@
-// src/pages/qr/CatalogoQRFases.jsx
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import SearchBar from '../../components/SearchBar';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 export default function CatalogoQRFases() {
   const { planId } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const config = {
     plan1: { titulo: 'PLAN MÉRIDA 465', fondo: '/logos/banner1.jpg', fases: [{ id: 1, nombre: 'XX' }] },
@@ -28,23 +28,24 @@ export default function CatalogoQRFases() {
     backgroundPosition: 'center',
     backgroundAttachment: 'fixed',
     flex: 1,
-    padding: '30px',
+    padding: isMobile ? '20px 15px' : '30px',
     boxSizing: 'border-box',
     minHeight: 'calc(100vh - 80px)'
   };
 
   const titleStyle = {
-    fontSize: '2.5rem',
+    fontSize: isMobile ? '1.8rem' : '2.5rem',
     fontWeight: 'bold',
     color: '#002855',
     textAlign: 'center',
-    marginBottom: '10px'
+    marginBottom: '10px',
+    marginTop: isMobile ? '20px' : '0'
   };
 
   const gridStyle = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-    gap: '35px',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(260px, 1fr))',
+    gap: isMobile ? '20px' : '35px',
     marginTop: '40px',
     maxWidth: '1200px',
     marginLeft: 'auto',
@@ -66,7 +67,6 @@ export default function CatalogoQRFases() {
     if (planId === 'plan2' && faseId === 2) {
       navigate(`/catalogo-qr/plan2/frentes`);
     } else {
-      // Otras fases: mostrar mensaje de próximamente
       alert('Próximamente disponible');
     }
   };
@@ -75,7 +75,7 @@ export default function CatalogoQRFases() {
     return (
       <div style={containerStyle}>
         <h1 style={titleStyle}>{plan.titulo}</h1>
-        <SearchBar />
+        {/* Buscador eliminado */}
         <p style={{ textAlign: 'center', marginTop: '60px', fontSize: '1.2rem', color: '#555' }}>
           Próximamente disponible
         </p>
@@ -86,7 +86,7 @@ export default function CatalogoQRFases() {
   return (
     <div style={containerStyle}>
       <h1 style={titleStyle}>{plan.titulo}</h1>
-      <SearchBar />
+      {/* Buscador eliminado */}
       <div style={{ textAlign: 'center', marginTop: '10px', color: '#f37021', fontWeight: '500' }}>
         Selecciona una fase para ver sus códigos QR
       </div>
@@ -96,8 +96,8 @@ export default function CatalogoQRFases() {
             key={fase.id}
             style={cardStyle}
             onClick={() => handleFaseClick(fase.id)}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 20px 35px -12px rgba(0,0,0,0.2)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 12px 25px -10px rgba(0,0,0,0.15)'; }}
+            onMouseEnter={e => { if(!isMobile){ e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 20px 35px -12px rgba(0,0,0,0.2)';} }}
+            onMouseLeave={e => { if(!isMobile){ e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 12px 25px -10px rgba(0,0,0,0.15)';} }}
           >
             <div style={{ fontSize: '4rem', marginBottom: '10px' }}>📱</div>
             <h3 style={{ color: '#002640', fontSize: '1.5rem', margin: '10px 0' }}>{fase.nombre}</h3>

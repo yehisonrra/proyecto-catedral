@@ -1,11 +1,11 @@
-// src/pages/CatalogoQR.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SearchBar from '../components/SearchBar';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export default function CatalogoQR() {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
+  const isMobile = useIsMobile(); // Adaptación para móviles
 
   useEffect(() => {
     setVisible(true);
@@ -58,7 +58,8 @@ export default function CatalogoQR() {
 
   const titleWrapperStyle = {
     textAlign: 'center',
-    marginBottom: '40px',
+    marginBottom: isMobile ? '20px' : '40px',
+    padding: isMobile ? '0 15px' : '0',
     opacity: visible ? 1 : 0,
     transform: visible ? 'translateY(0)' : 'translateY(30px)',
     transition: 'all 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1)'
@@ -77,12 +78,13 @@ export default function CatalogoQR() {
 
   const gridStyle = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: '40px',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', // 1 columna en móvil, 2 en PC
+    gap: isMobile ? '20px' : '40px',
     width: '100%',
     maxWidth: '1300px',
     marginTop: '30px',
-    padding: '0 20px'
+    padding: '0 20px',
+    boxSizing: 'border-box'
   };
 
   const bannerBaseStyle = {
@@ -90,7 +92,7 @@ export default function CatalogoQR() {
     borderRadius: '28px',
     textAlign: 'center',
     cursor: 'pointer',
-    fontSize: '1.4rem',
+    fontSize: isMobile ? '1.1rem' : '1.4rem',
     fontWeight: '800',
     color: 'white',
     textShadow: '2px 2px 12px rgba(0,0,0,0.5)',
@@ -103,7 +105,7 @@ export default function CatalogoQR() {
     width: '100%',
     boxSizing: 'border-box',
     overflow: 'hidden',
-    padding: '100px 30px'
+    padding: isMobile ? '60px 20px' : '100px 30px' // Menos padding en móvil
   };
 
   const overlayStyle = {
@@ -134,30 +136,31 @@ export default function CatalogoQR() {
         </p>
       </div>
 
-      <SearchBar />
+      {/* Buscador eliminado de aquí */}
 
       <div style={gridStyle}>
         {planes.map((plan) => (
           <button
             key={plan.id}
-            style={{
-              ...bannerBaseStyle,
-              backgroundImage: `url(${plan.imagen})`,
-            }}
+            style={{ ...bannerBaseStyle, backgroundImage: `url(${plan.imagen})` }}
             onClick={() => navigate(plan.ruta)}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.02)';
-              e.currentTarget.style.boxShadow = '0 30px 45px -15px rgba(0,0,0,0.4)';
+              if(!isMobile) {
+                e.currentTarget.style.transform = 'scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 30px 45px -15px rgba(0,0,0,0.4)';
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 20px 35px -12px rgba(0,0,0,0.3)';
+              if(!isMobile) {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = '0 20px 35px -12px rgba(0,0,0,0.3)';
+              }
             }}
           >
             <div style={overlayStyle} />
             <div style={{ position: 'relative', zIndex: 2 }}>
               {plan.titulo}
-              <p style={{ fontSize: '1rem', marginTop: '12px', fontWeight: '500' }}>{plan.descripcion}</p>
+              <p style={{ fontSize: isMobile ? '0.9rem' : '1rem', marginTop: '12px', fontWeight: '500' }}>{plan.descripcion}</p>
               <div style={{
                 marginTop: '25px',
                 fontSize: '0.9rem',
