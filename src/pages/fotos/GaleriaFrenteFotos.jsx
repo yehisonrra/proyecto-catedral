@@ -1,7 +1,7 @@
 // src/pages/fotos/GaleriaFrenteFotos.jsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import SearchBar from '../../components/SearchBar';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import { datosFase2 } from '../fases/Fase2';
 import { getFotosPorFrente, uploadFoto, deleteFoto, crearGrupoVacio, eliminarGrupoCompleto } from '../../api/fotos';
 import * as faceapi from 'face-api.js';
@@ -35,10 +35,10 @@ async function guardarEtiquetas(fotoId, etiquetas) {
 }
 
 // ─── Subcomponente: foto con reconocimiento en segundo plano ──────────────────
-// Sin canvas visible, sin botón, sin etiquetas — todo ocurre silenciosamente
 function CeldaConFoto({ foto, onEliminar, modelosListos }) {
   const imgRef = useRef(null);
   const yaAnalizado = useRef(false);
+  const isMobile = useIsMobile();
 
   const analizarSilencioso = useCallback(async () => {
     if (!modelosListos || !imgRef.current) return;
@@ -63,7 +63,6 @@ function CeldaConFoto({ foto, onEliminar, modelosListos }) {
       const data = await res.json();
       const resultados = data.identificados || [];
 
-      // Solo guardar en SQLite las personas reconocidas
       const reconocidas = resultados.filter(r => r.reconocido);
       if (reconocidas.length > 0) {
         await guardarEtiquetas(foto.id, reconocidas);
@@ -81,23 +80,45 @@ function CeldaConFoto({ foto, onEliminar, modelosListos }) {
   }, [modelosListos, analizarSilencioso]);
 
   return (
-    <div style={{ position: 'relative', width: '100%', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+    <div style={{
+      position: 'relative',
+      width: '100%',
+      borderRadius: '12px',
+      overflow: 'hidden',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+    }}>
       <img
         ref={imgRef}
         src={`${API_URL}${foto.url}`}
         alt="foto"
         crossOrigin="anonymous"
-        style={{ width: '100%', height: 'auto', maxHeight: '350px', objectFit: 'cover', display: 'block', cursor: 'pointer' }}
+        style={{
+          width: '100%',
+          height: 'auto',
+          maxHeight: isMobile ? '200px' : '350px',
+          objectFit: 'cover',
+          display: 'block',
+          cursor: 'pointer'
+        }}
         onClick={() => window.open(`${API_URL}${foto.url}`, '_blank')}
         onLoad={handleImageLoad}
       />
       <button
         style={{
-          position: 'absolute', top: '8px', right: '8px',
-          backgroundColor: 'rgba(0,0,0,0.6)', color: 'white',
-          border: 'none', borderRadius: '50%', width: '28px', height: '28px',
-          cursor: 'pointer', fontSize: '14px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
+          position: 'absolute',
+          top: '6px',
+          right: '6px',
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50%',
+          width: isMobile ? '22px' : '28px',
+          height: isMobile ? '22px' : '28px',
+          cursor: 'pointer',
+          fontSize: isMobile ? '11px' : '14px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
         onClick={() => onEliminar(foto.id)}
       >✕</button>
@@ -109,6 +130,9 @@ function CeldaConFoto({ foto, onEliminar, modelosListos }) {
 export default function GaleriaFrenteFotos() {
   const { frenteId } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const isTiny   = useIsMobile(480);
+
   const [frente, setFrente] = useState(null);
   const [grupos, setGrupos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -197,35 +221,72 @@ export default function GaleriaFrenteFotos() {
 
   if (!frente || loading) return <div style={{ padding: '20px', color: 'white' }}>Cargando...</div>;
 
-  // ─── Estilos (idénticos al original) ─────────────────────────────────────
+  // ─── Estilos responsive ─────────────────────────────────────────────────────
   const containerStyle = {
     background: `linear-gradient(rgba(255,255,255,0.4),rgba(255,255,255,0.4)),url('/logos/FONDO.jpg')`,
     backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed',
-    flex: 1, padding: '30px', boxSizing: 'border-box', minHeight: 'calc(100vh - 80px)'
+    flex: 1, padding: isMobile ? '15px' : '30px',
+    boxSizing: 'border-box', minHeight: 'calc(100vh - 80px)'
   };
+
   const bannerStyle = {
     borderLeft: '5px solid #f37021',
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: 'white', padding: '20px', borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '30px'
+    display: 'flex',
+    flexDirection: isMobile ? 'column' : 'row',
+    alignItems: isMobile ? 'center' : 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'white',
+    padding: isMobile ? '15px' : '20px',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+    marginBottom: isMobile ? '15px' : '30px',
+    gap: isMobile ? '10px' : '0',
+    textAlign: isMobile ? 'center' : 'left'
   };
-  const grupoContainerStyle = { position: 'relative', marginBottom: '40px' };
-  const grupoRowStyle = { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px' };
+
+  const grupoContainerStyle = { position: 'relative', marginBottom: isMobile ? '30px' : '40px' };
+  const grupoRowStyle = {
+    display: 'grid',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+    gap: isMobile ? '15px' : '30px'
+  };
+
   const celdaStyle = {
-    backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: '20px', padding: '20px',
-    boxShadow: '0 8px 20px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column',
-    alignItems: 'center', justifyContent: 'center', minHeight: '300px'
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: '16px',
+    padding: isMobile ? '12px' : '20px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: isMobile ? '200px' : '300px'
   };
-  const emptyFrameStyle = { textAlign: 'center', width: '100%', padding: '20px' };
+
+  const categoriaTituloStyle = {
+    fontSize: isMobile ? '1.2rem' : '1.5rem',
+    fontWeight: 'bold',
+    color: '#002640',
+    marginBottom: '10px',
+    textAlign: 'center'
+  };
+
+  const emptyFrameStyle = { textAlign: 'center', width: '100%', padding: '10px' };
   const emptyButtonStyle = {
-    backgroundColor: '#f37021', color: 'white', border: 'none', padding: '12px 20px',
-    borderRadius: '40px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', marginTop: '15px'
+    backgroundColor: '#f37021', color: 'white', border: 'none',
+    padding: isMobile ? '8px 16px' : '12px 20px',
+    borderRadius: '40px', fontWeight: 'bold', cursor: 'pointer',
+    fontSize: isMobile ? '0.8rem' : '1rem', marginTop: '10px'
   };
-  const categoriaTituloStyle = { fontSize: '1.5rem', fontWeight: 'bold', color: '#002640', marginBottom: '10px', textAlign: 'center' };
   const deleteGroupButtonStyle = {
-    position: 'absolute', top: '-15px', right: '-10px', backgroundColor: '#ff4444', color: 'white',
-    border: 'none', borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer',
-    fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    position: 'absolute', top: '-10px', right: '-8px',
+    backgroundColor: '#ff4444', color: 'white',
+    border: 'none', borderRadius: '50%',
+    width: isMobile ? '28px' : '36px',
+    height: isMobile ? '28px' : '36px',
+    cursor: 'pointer',
+    fontSize: isMobile ? '0.9rem' : '1.2rem',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
     boxShadow: '0 2px 5px rgba(0,0,0,0.2)', zIndex: 2
   };
 
@@ -233,7 +294,7 @@ export default function GaleriaFrenteFotos() {
     const inputRef = useRef(null);
     return (
       <div style={emptyFrameStyle}>
-        <div style={{ fontSize: '3rem', marginBottom: '10px' }}>📷</div>
+        <div style={{ fontSize: isMobile ? '2.5rem' : '3rem', marginBottom: '5px' }}>📷</div>
         <button style={emptyButtonStyle} onClick={() => inputRef.current.click()}>+ Subir foto</button>
         <input type="file" ref={inputRef} accept="image/*" style={{ display: 'none' }}
           onChange={(e) => { if (e.target.files[0]) { onSubir(groupId, categoria, e.target.files[0]); e.target.value = ''; } }} />
@@ -243,21 +304,23 @@ export default function GaleriaFrenteFotos() {
 
   return (
     <div style={containerStyle}>
-      <SearchBar />
-
       <div style={bannerStyle}>
         <div style={{ flex: 1 }}>
-          <h2 style={{ margin: 0, color: '#002640', fontSize: '1.4rem' }}>{frente.nombreCompleto}</h2>
-          <p style={{ margin: '5px 0 0', color: '#f37021', fontWeight: 'bold' }}>FRENTE #{frente.id.toString().padStart(2, '0')}</p>
+          <h2 style={{ margin: 0, color: '#002640', fontSize: isMobile ? '1.1rem' : '1.4rem' }}>
+            {frente.nombreCompleto}
+          </h2>
+          <p style={{ margin: '4px 0 0', color: '#f37021', fontWeight: 'bold', fontSize: isMobile ? '0.8rem' : '0.9rem' }}>
+            FRENTE #{frente.id.toString().padStart(2, '0')}
+          </p>
         </div>
         <button onClick={() => navigate('/banco-fotos/plan2/frentes')}
-          style={{ backgroundColor: '#ddd', border: 'none', padding: '8px 16px', borderRadius: '5px', cursor: 'pointer' }}>
+          style={{ backgroundColor: '#ddd', border: 'none', padding: isMobile ? '5px 12px' : '8px 16px', borderRadius: '5px', cursor: 'pointer', fontSize: isMobile ? '0.7rem' : '0.9rem' }}>
           ← Volver
         </button>
       </div>
 
       {grupos.length === 0 && (
-        <div style={{ textAlign: 'center', marginTop: '60px', color: '#fff', textShadow: '1px 1px 2px black' }}>
+        <div style={{ textAlign: 'center', marginTop: '40px', color: '#fff', textShadow: '1px 1px 2px black' }}>
           <p>No hay grupos de fotos. Agrega tu primera foto en cualquier columna.</p>
         </div>
       )}
@@ -291,7 +354,9 @@ export default function GaleriaFrenteFotos() {
       <div style={{ textAlign: 'center', marginTop: '20px' }}>
         <button onClick={agregarNuevoSet} style={{
           backgroundColor: 'rgba(0,86,145,0.8)', color: 'white', border: 'none',
-          padding: '12px 24px', borderRadius: '40px', fontWeight: 'bold', cursor: 'pointer'
+          padding: isMobile ? '8px 16px' : '12px 24px',
+          borderRadius: '40px', fontWeight: 'bold', cursor: 'pointer',
+          fontSize: isMobile ? '0.8rem' : '1rem'
         }}>
           + Agregar nuevo set de fotos
         </button>

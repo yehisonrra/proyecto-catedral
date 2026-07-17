@@ -1,10 +1,12 @@
 // src/pages/BancoFotos.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SearchBar from '../components/SearchBar';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export default function BancoFotos() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const isTiny   = useIsMobile(480);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -48,8 +50,8 @@ export default function BancoFotos() {
     alignItems: 'center',
     justifyContent: 'center',
     fontFamily: "'Poppins', 'Montserrat', sans-serif",
-    paddingTop: '80px',
-    paddingBottom: '40px',
+    paddingTop: isMobile ? '20px' : '80px',
+    paddingBottom: isMobile ? '20px' : '40px',
     backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('/logos/FONDO.jpg')`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
@@ -58,14 +60,14 @@ export default function BancoFotos() {
 
   const titleWrapperStyle = {
     textAlign: 'center',
-    marginBottom: '40px',
+    marginBottom: isMobile ? '20px' : '40px',
     opacity: visible ? 1 : 0,
     transform: visible ? 'translateY(0)' : 'translateY(30px)',
     transition: 'all 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1)'
   };
 
   const mainTitleStyle = {
-    fontSize: 'clamp(2rem, 6vw, 3.5rem)',
+    fontSize: 'clamp(1.8rem, 6vw, 3.5rem)',
     fontWeight: '800',
     background: 'linear-gradient(135deg, #2f2f2f, #4a4a4a)',
     WebkitBackgroundClip: 'text',
@@ -77,20 +79,21 @@ export default function BancoFotos() {
 
   const gridStyle = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: '40px',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+    gap: isMobile ? '20px' : '40px',
     width: '100%',
     maxWidth: '1300px',
-    marginTop: '30px',
-    padding: '0 20px'
+    marginTop: isMobile ? '15px' : '30px',
+    padding: '0 15px'
   };
 
+  // Estilo base del banner con flex para distribuir contenido verticalmente
   const bannerBaseStyle = {
     position: 'relative',
     borderRadius: '28px',
     textAlign: 'center',
     cursor: 'pointer',
-    fontSize: '1.4rem',
+    fontSize: isMobile ? (isTiny ? '0.9rem' : '1.1rem') : '1.4rem',
     fontWeight: '800',
     color: 'white',
     textShadow: '2px 2px 12px rgba(0,0,0,0.5)',
@@ -103,7 +106,12 @@ export default function BancoFotos() {
     width: '100%',
     boxSizing: 'border-box',
     overflow: 'hidden',
-    padding: '100px 30px'
+    padding: isMobile ? (isTiny ? '40px 15px' : '60px 20px') : '100px 30px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: isMobile ? '200px' : '300px'
   };
 
   const overlayStyle = {
@@ -118,23 +126,70 @@ export default function BancoFotos() {
     pointerEvents: 'none'
   };
 
+  // Estilo del contenedor del título (flexible)
+  const contentStyle = {
+    position: 'relative',
+    zIndex: 2,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    flex: 1,
+  };
+
+  // Estilo del título con manejo de desbordamiento
+  const titleStyle = {
+    fontSize: isMobile ? (isTiny ? '0.9rem' : '1.1rem') : '1.4rem',
+    fontWeight: '800',
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
+    maxWidth: '100%',
+    lineHeight: 1.3,
+    marginBottom: isMobile ? '8px' : '15px'
+  };
+
+  const descripcionStyle = {
+    fontSize: isMobile ? '0.7rem' : '1rem',
+    fontWeight: '500',
+    marginTop: '5px',
+    marginBottom: isMobile ? '10px' : '20px'
+  };
+
+  const explorarStyle = {
+    marginTop: 'auto', // empuja el botón hacia abajo
+    fontSize: isMobile ? '0.7rem' : '0.9rem',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    display: 'inline-block',
+    padding: '6px 20px',
+    borderRadius: '40px',
+    backdropFilter: 'blur(4px)',
+    alignSelf: 'center',
+    marginTop: isMobile ? '15px' : '25px'
+  };
+
   return (
     <div style={containerStyle}>
       <div style={titleWrapperStyle}>
         <h1 style={mainTitleStyle}>BANCO DE FOTOS</h1>
         <div style={{
-          width: '100px',
-          height: '5px',
+          width: '80px',
+          height: '4px',
           background: '#f37021',
-          margin: '20px auto',
-          borderRadius: '5px'
+          margin: '15px auto',
+          borderRadius: '4px'
         }} />
-        <p style={{  fontStyle: 'italic', color: '#1e2a3a', fontSize: 'clamp(1rem, 4vw, 1.4rem)', fontWeight: '600', marginTop: '15px', textShadow: '0px 1px 2px rgba(255,255,255,0.5)' }}>
+        <p style={{
+          fontStyle: 'italic',
+          color: '#1e2a3a',
+          fontSize: 'clamp(0.9rem, 3vw, 1.4rem)',
+          fontWeight: '600',
+          marginTop: '10px',
+          textShadow: '0px 1px 2px rgba(255,255,255,0.5)'
+        }}>
           Galería Visual del Proyecto
         </p>
       </div>
-
-      <SearchBar />
 
       <div style={gridStyle}>
         {planes.map((plan) => (
@@ -155,20 +210,12 @@ export default function BancoFotos() {
             }}
           >
             <div style={overlayStyle} />
-            <div style={{ position: 'relative', zIndex: 2, fontSize: '1.1rem', }}>
-              {plan.titulo}
-              <p style={{ fontSize: '1rem', marginTop: '12px', fontWeight: '500' }}>{plan.descripcion}</p>
-              <div style={{
-                marginTop: '25px',
-                fontSize: '0.9rem',
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                display: 'inline-block',
-                padding: '8px 20px',
-                borderRadius: '40px',
-                backdropFilter: 'blur(4px)'
-              }}>
-                📸 EXPLORAR
-              </div>
+            <div style={contentStyle}>
+              <div style={titleStyle}>{plan.titulo}</div>
+              {plan.descripcion && (
+                <div style={descripcionStyle}>{plan.descripcion}</div>
+              )}
+              <div style={explorarStyle}>📸 EXPLORAR</div>
             </div>
           </button>
         ))}
