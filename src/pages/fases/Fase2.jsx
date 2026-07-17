@@ -14,7 +14,7 @@ export const datosFase2 = [
   { id: 8, nombreCompleto: "Restauración de la capilla el sagrario 1ra de 2 fases.", nombre: "CAPILLA EL SAGRARIO", imagen: "/logos/frente8.jpg" },
   { id: 9, nombreCompleto: "Rehabilitación de otros espacios internos.", nombre: "ESPACIOS INTERNOS", imagen: "/logos/frente9.jpg" },
   { id: 10, nombreCompleto: "Mejoras puntuales en la calle 22 - anteproyecto.", nombre: "CALLE 22", imagen: "/logos/frente10.jpg" },
-  { id: 11, nombreCompleto: "Rehabilitación y mejoras en espacios entre los distintos volúmenes de la catedral.", nombre: "REHAB. Y MEJORAS", imagen: "/logos/frente11.jpg" },
+  { id: 11, nombreCompleto: "Rehabilitación y mejoras en espacios entre los distintos volúmenes de la catedral.", nombre: "REHAB. Y MEJORAS", imagen: "/logos/frente11.jpeg" },
   { id: 12, nombreCompleto: "Restauración externa de torre norte.", nombre: "TORRE NORTE", imagen: "/logos/frente12.jpg" },
   { id: 13, nombreCompleto: "Restauración de cupulines, linternas e interior del cupulino - lateral noreste.", nombre: "CUPULINES, LINTERNAS E INTERIOR - LAT. NO.", imagen: "/logos/frente13.jpg" },
   { id: 14, nombreCompleto: "Restauración de fachada lateral noreste (edificio principal) (1 de 2 fases).", nombre: "REST. FACHADA LATERAL NO.", imagen: "/logos/frente14.jpg" },
@@ -30,7 +30,7 @@ export const datosFase2 = [
   { id: 24, nombreCompleto: "Restauración interna de torre norte (1 de 2 fases).", nombre: "TORRE NORTE (INTERNA)", imagen: "/logos/frente24.jpg" },
   { id: 25, nombreCompleto: "Consolidación de espacio museográfico para lapidario - jardín", nombre: "ESPACIO MUSEOGRÁFICO", imagen: "/logos/frente25.jpg" },
   { id: 26, nombreCompleto: "Exposición del imaginario religioso consolidado (custodio).", nombre: "CONS. IMAGINARIO RELIGIOSO", imagen: "/logos/frente26.jpeg" },
-  { id: 27, nombreCompleto: "Restauración de la fachada externa desde losas planas a tejado lateral suroeste.", nombre: "FACHADA EXTERNA LAT. SO", imagen: "/logos/frente27.jpg" },
+  { id: 27, nombreCompleto: "Restauración de la fachada externa desde losas planas a tejado lateral suroeste.", nombre: "FACHADA EXTERNA LAT. SO", imagen: "/logos/frente27.jpeg" },
   { id: 28, nombreCompleto: "Restauración de fachada posterior suroeste.", nombre: "FACHADA POSTERIOR SO", imagen: "/logos/frente28.jpg" },
   { id: 29, nombreCompleto: "Impermeabilización del sistema de losas de cupulines lateral noreste.", nombre: "LOSAS DE CUPULINES LAT. NORESTE", imagen: "/logos/frente29.png" },
   { id: 30, nombreCompleto: "Restauración de la fachada externa desde losas planas a tejado lateral noreste.", nombre: "FACHADA EXTERNA LAT. NO", imagen: "/logos/frente30.png" }
