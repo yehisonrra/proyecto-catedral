@@ -12,6 +12,12 @@ import Fase4 from './pages/fases/Fase4';
 import PlanMerida from './pages/PlanMerida';
 import Plan3 from './pages/Plan3';
 import Plan4 from './pages/Plan4';
+import GaleriaCarpetas from './pages/galeria/GaleriaCarpetas';
+import CarpetaDetalle  from './pages/galeria/CarpetaDetalle';
+import RostrosIndex    from './pages/galeria/RostrosIndex';
+import RostroDetalle   from './pages/galeria/RostroDetalle';
+import ObjetosIndex    from './pages/galeria/ObjetosIndex';
+import ObjetoDetalle   from './pages/galeria/ObjetoDetalle';
 import FrenteDetalle from './pages/fases/frente/FrenteDetalle';
 import BancoFotos from './pages/BancoFotos';
 import PlanFotos from './pages/fotos/PlanFotos';
@@ -29,6 +35,7 @@ import { InformesProvider } from './context/InformesProvider';
 import GlobalSearchBar from './components/GlobalSearchBar';
 import SearchResults from './pages/SearchResults';
 import { useIsMobile } from './hooks/useIsMobile';
+
 
 function AppContent() {
   const location   = useLocation();
@@ -103,6 +110,13 @@ function AppContent() {
             <Route path="/banco-fotos/:planId"                element={<PlanFotos />} />
             <Route path="/banco-fotos/plan2/frentes"          element={<FrentesFotos />} />
             <Route path="/banco-fotos/plan2/frente/:frenteId" element={<GaleriaFrenteFotos />} />
+<Route path="/galeria-carpetas"                    element={<GaleriaCarpetas />} />
+<Route path="/galeria-carpetas/carpeta/:carpetaId" element={<CarpetaDetalle />} />
+<Route path="/galeria-carpetas/rostros"            element={<RostrosIndex />} />
+<Route path="/galeria-carpetas/rostro/:rostroId"   element={<RostroDetalle />} />
+<Route path="/galeria-carpetas/objetos"            element={<ObjetosIndex />} />
+<Route path="/galeria-carpetas/objeto/:objetoId"   element={<ObjetoDetalle />} />
+          
             <Route path="/informes/especiales"                element={<Especiales />} />
             <Route path="/informes/divulgacion"               element={<Divulgacion />} />
             <Route path="/informes/avance"                    element={<Avance />} />

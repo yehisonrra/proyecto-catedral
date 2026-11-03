@@ -127,6 +127,14 @@ export default function Sidebar({ isOpen, toggle }) {
             <Link to="/banco-fotos" style={linkStyle} onClick={handleLinkClick}>🖼️ Banco de Fotos</Link>
           </div>
 
+
+<div style={{ ...menuItemWrapper, marginTop: '10px',
+  backgroundColor: location.pathname.startsWith('/galeria-carpetas') ? '#005691' : 'transparent' }}>
+  <Link to="/galeria-carpetas" style={linkStyle} onClick={handleLinkClick}>
+    🗂️ Galería por Carpetas
+  </Link>
+</div>
+
           <div style={{ ...menuItemWrapper, marginTop: '10px', backgroundColor: isActive('/catalogo-qr') ? '#005691' : 'transparent' }}>
             <Link to="/catalogo-qr" style={linkStyle} onClick={handleLinkClick}>📱 Catálogo de QRs</Link>
           </div>

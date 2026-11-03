@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getInformes } from '../api/informes';
 import { datosFase2 } from './fases/Fase2';
+import { buscarEnGaleria, urlImagen } from '../api/carpetas';
 
 const API_URL = 'http://localhost:3001';
 
@@ -11,7 +12,7 @@ export default function SearchResults() {
   const navigate = useNavigate();
   const query = new URLSearchParams(location.search).get('q') || '';
 
-  const [resultados, setResultados] = useState({ informes: [], frentes: [], fotos: [] });
+  const [resultados, setResultados] = useState({ informes: [], frentes: [], fotos: [], galeria: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -38,7 +39,7 @@ export default function SearchResults() {
           frente.nombreCompleto.toLowerCase().includes(term)
         ).map(frente => ({ ...frente, tipo: 'frente', link: `/fase2/frente/${frente.id}` }));
 
-        // ── Fotos por persona reconocida ──────────────────────────────────────
+        // ── Fotos por persona reconocida (frentes) ────────────────────────────
         let fotosFiltradas = [];
         try {
           const res = await fetch(`${API_URL}/api/fotos/buscar-personas?q=${encodeURIComponent(query.trim())}`);
@@ -50,7 +51,16 @@ export default function SearchResults() {
           console.warn('[SearchResults] No se pudo buscar fotos por persona:', e);
         }
 
-        setResultados({ informes: informesFiltrados, frentes: frentesFiltrados, fotos: fotosFiltradas });
+        // ── Galería por Carpetas (rostros, objetos y nombre de carpeta) ───────
+        let galeria = [];
+        try {
+          const dataG = await buscarEnGaleria(query.trim());
+          galeria = dataG.fotos || [];
+        } catch (e) {
+          console.warn('[SearchResults] No se pudo buscar en la galería por carpetas:', e);
+        }
+
+        setResultados({ informes: informesFiltrados, frentes: frentesFiltrados, fotos: fotosFiltradas, galeria });
       } catch (err) {
         console.error(err);
         setError('Error al realizar la búsqueda');
@@ -152,7 +162,40 @@ export default function SearchResults() {
     );
   };
 
-  const totalResultados = resultados.informes.length + resultados.frentes.length + resultados.fotos.length;
+  const renderGaleria = () => (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px' }}>
+      {resultados.galeria.map((foto) => (
+        <div
+          key={foto.id}
+          onClick={() => navigate(`/galeria-carpetas/carpeta/${foto.carpeta_id}`)}
+          style={{
+            cursor: 'pointer', borderRadius: '10px', overflow: 'hidden',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            background: 'white'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.18)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.12)'; }}
+        >
+          <img
+            src={urlImagen(foto.url)}
+            alt="Foto de la galería"
+            style={{ width: '100%', height: '110px', objectFit: 'cover', display: 'block' }}
+          />
+          <div style={{ padding: '8px 10px' }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#002640' }}>📁 {foto.carpeta_nombre}</div>
+            <div style={{ fontSize: '0.7rem', color: '#f37021', marginTop: '2px', fontWeight: 600 }}>
+              {foto.motivos.join(' · ')}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const totalResultados =
+    resultados.informes.length + resultados.frentes.length +
+    resultados.fotos.length + resultados.galeria.length;
 
   return (
     <div style={fondoStyle}>
@@ -166,7 +209,15 @@ export default function SearchResults() {
 
         {!loading && !error && (
           <>
-            {/* Sección fotos por persona — aparece primero si hay resultados */}
+            {/* Galería por Carpetas — aparece primero si hay resultados */}
+            {resultados.galeria.length > 0 && (
+              <div style={seccionStyle}>
+                <h2 style={subtituloStyle}>🗂️ Galería por Carpetas</h2>
+                {renderGaleria()}
+              </div>
+            )}
+
+            {/* Fotos por persona (frentes) */}
             {resultados.fotos.length > 0 && (
               <div style={seccionStyle}>
                 <h2 style={subtituloStyle}>👤 Fotos con "{query}"</h2>
